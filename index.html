@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>車輛派遣系統流程圖 (V3 風格還原版)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9; /* V3 原版背景色 */
+            color: #334155;
+        }
+
+        /* 標籤樣式 - V3 原版 */
+        .badge-manual {
+            background-color: #e11d48;
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            box-shadow: 0 2px 4px rgba(225, 29, 72, 0.2);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+        
+        .badge-auto {
+            background-color: #0891b2;
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            box-shadow: 0 2px 4px rgba(8, 145, 178, 0.2);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        /* 訊息氣泡 - V3 原版 */
+        .msg-bubble {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #475569;
+            white-space: pre-wrap;
+        }
+
+        /* 卡片特效 - V3 原版 */
+        .flow-card {
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #e2e8f0;
+            background: white;
+            position: relative;
+            z-index: 10;
+        }
+        .flow-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e1;
+        }
+
+        /* 連接線系統 (Desktop) */
+        @media (min-width: 1024px) {
+            .swimlane-col {
+                border-right: 2px dashed #cbd5e1;
+                padding-bottom: 50px;
+            }
+            .swimlane-col:last-child {
+                border-right: none;
+            }
+
+            /* 向右箭頭 */
+            .connector-right {
+                position: absolute;
+                right: -32px;
+                top: 50%;
+                width: 32px;
+                height: 2px;
+                background-color: #94a3b8;
+                z-index: 5;
+            }
+            .connector-right::after {
+                content: '';
+                position: absolute;
+                right: -4px;
+                top: -4px;
+                border-top: 5px solid transparent;
+                border-bottom: 5px solid transparent;
+                border-left: 6px solid #94a3b8;
+            }
+
+             /* 向左箭頭 (回傳) */
+             .connector-left {
+                position: absolute;
+                left: -32px;
+                top: 50%;
+                width: 32px;
+                height: 2px;
+                background-color: #22c55e;
+                z-index: 5;
+            }
+            .connector-left::after {
+                content: '';
+                position: absolute;
+                left: -4px;
+                top: -4px;
+                border-top: 5px solid transparent;
+                border-bottom: 5px solid transparent;
+                border-right: 6px solid #22c55e;
+            }
+            
+            /* 下方箭頭 */
+            .arrow-down {
+                position: absolute; 
+                bottom: -24px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                color: #cbd5e1;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-slate-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-[1600px] mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2 rounded text-white">
+                    <i class="fa-solid fa-code-branch"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold">車輛派遣系統標準作業流程</h1>
+                    <p class="text-xs text-slate-400">Restored Version V5 | 流程修正版</p>
+                </div>
+            </div>
+            <div class="flex gap-3 text-xs">
+                <div class="flex items-center gap-1 px-2 py-1 bg-slate-700 rounded"><div class="w-2 h-2 rounded-full bg-rose-500"></div> 人工介入</div>
+                <div class="flex items-center gap-1 px-2 py-1 bg-slate-700 rounded"><div class="w-2 h-2 rounded-full bg-cyan-500"></div> 系統自動</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow p-4 md:p-6 overflow-x-auto bg-slate-100">
+        <div class="max-w-[1600px] mx-auto">
+            
+            <!-- Swimlane Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 bg-white rounded-xl shadow-xl border border-slate-300 min-h-[1400px]">
+
+                <!-- ==================== Column 1: 客人端 (LINE OA) ==================== -->
+                <div class="swimlane-col flex flex-col relative bg-slate-50/30">
+                    <div class="p-3 bg-green-100/80 border-b border-green-200 text-center font-bold text-green-900 sticky top-0 z-40">
+                        <i class="fa-brands fa-line mr-2"></i> LINE 官方 OA (客人端)
+                    </div>
+                    
+                    <div class="p-5 flex flex-col gap-8">
+                        
+                        <!-- Step 1 -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-rose-500 shadow-sm">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-manual"><i class="fa-solid fa-hand-pointer"></i> MANUAL</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 1</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 mb-2">依照格式輸入叫車訊息</h4>
+                            <div class="msg-bubble">Line名字: Yuki<br>上車: 永和區永利路88號<br>目的地: 林森北路69號</div>
+                            <div class="arrow-down hidden lg:block"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm mt-2">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-robot"></i> BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 2</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 mb-2">BOT Auto Reply</h4>
+                            <div class="msg-bubble">Yuki 您好, 已收到叫車需求!<br>訂單編號: ORD176...<br><span class="text-rose-500">5分鐘內可免費取消</span></div>
+                            <!-- Connect to Admin -->
+                            <div class="hidden lg:block connector-right"></div>
+                        </div>
+
+                        <!-- Spacer -->
+                        <div class="hidden lg:block h-[520px]"></div>
+
+                        <!-- Step 10: Match Success -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm bg-green-50/50">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-check"></i> BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 10</span>
+                            </div>
+                            <h4 class="font-bold text-green-700 mb-2">配對成功通知</h4>
+                            <div class="msg-bubble bg-white">司機: 方唐鏡 (AE-86888)<br>預計 <span class="font-bold text-orange-600">10</span> 分鐘到達</div>
+                            <div class="arrow-down hidden lg:block"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+
+                        <!-- Step 13: Client End (Fixed Logic) -->
+                         <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm mt-4 bg-slate-100 opacity-90">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto">BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">END</span>
+                            </div>
+                            <h4 class="font-bold text-slate-700"><i class="fa-solid fa-person-walking-luggage"></i> 客上</h4>
+                            <p class="text-xs text-slate-500 mt-1">行程開始</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ==================== Column 2: 控台群組 (Admin) ==================== -->
+                <div class="swimlane-col flex flex-col relative bg-white">
+                    <div class="p-3 bg-blue-100/80 border-b border-blue-200 text-center font-bold text-blue-900 sticky top-0 z-40">
+                        <i class="fa-solid fa-headset mr-2"></i> 控台群組 (Admin)
+                    </div>
+                    
+                    <div class="p-5 flex flex-col gap-8">
+                        
+                        <!-- Spacer -->
+                        <div class="hidden lg:block h-48"></div>
+
+                        <!-- Step 3 -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-robot"></i> BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 3</span>
+                            </div>
+                            <h4 class="font-bold text-blue-800 mb-2">BOT 發話 @值班人員</h4>
+                            <div class="msg-bubble">@A9, 有一筆新即時訂單<br>乘客: Yuki<br><span class="text-orange-500">司機配對中...</span></div>
+                             <!-- Connect to Driver -->
+                             <div class="hidden lg:block connector-right" style="top:70%"></div>
+                        </div>
+
+                        <!-- Spacer -->
+                        <div class="hidden lg:block h-[200px]"></div>
+
+                        <!-- Step 7 -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm relative">
+                            <!-- Input from Driver -->
+                             <div class="hidden lg:block absolute -right-8 top-1/2 w-8 h-[2px] bg-cyan-400"></div>
+
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-robot"></i> BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 7</span>
+                            </div>
+                            <h4 class="font-bold text-blue-800 mb-2">回應「即時訂單的那層樓」</h4>
+                            <div class="msg-bubble">@A9, 訂單配對成功<br>司機: 方唐鏡<br>預計 <span class="font-bold">「10」</span> 分鐘到達</div>
+                             <div class="arrow-down hidden lg:block"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+
+                        <!-- Step 8: Manual Review -->
+                        <div class="flow-card p-4 rounded-lg border-2 border-rose-200 bg-rose-50 shadow-md mt-2">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-manual"><i class="fa-solid fa-gavel"></i> MANUAL CHECK</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 8</span>
+                            </div>
+                            <h4 class="font-bold text-rose-800 mb-2">控台人工審核</h4>
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-green-500 text-white py-1 rounded text-xs font-bold">通過</button>
+                                <button class="flex-1 bg-slate-400 text-white py-1 rounded text-xs font-bold">失敗</button>
+                            </div>
+                             <div class="arrow-down hidden lg:block"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+
+                         <!-- Step 9: Finalize Match -->
+                         <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm mt-2">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-robot"></i> BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 9</span>
+                            </div>
+                            <h4 class="font-bold text-blue-800 mb-2">確認配對成功</h4>
+                            <div class="msg-bubble">@A9, 此單配對完成</div>
+
+                            <!-- Output to Client & Driver -->
+                            <div class="hidden lg:block connector-left"></div>
+                            <div class="hidden lg:block connector-right" style="background-color: #22c55e;"></div>
+                        </div>
+
+                        <!-- Step 12: Admin Receive Boarding (Fixed Logic) -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-indigo-500 shadow-lg mt-12 bg-indigo-50 relative">
+                            <!-- Input from Driver Step 11 -->
+                            <div class="hidden lg:block connector-right" style="background-color: #6366f1;"></div>
+
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto" style="background-color: #6366f1;"><i class="fa-solid fa-flag-checkered"></i> BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 12</span>
+                            </div>
+                            <h4 class="font-bold text-indigo-900 mb-2">接收客上通知</h4>
+                            <div class="msg-bubble border-indigo-200 bg-white text-indigo-900 font-bold">@A9 , 客人已上車，此筆訂單完成。</div>
+                            
+                            <!-- Output to Client End -->
+                            <div class="hidden lg:block connector-left" style="background-color: #6366f1; top: 80%;"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ==================== Column 3: 司機群組 (Driver) ==================== -->
+                <div class="swimlane-col flex flex-col relative bg-slate-50/30">
+                    <div class="p-3 bg-orange-100/80 border-b border-orange-200 text-center font-bold text-orange-900 sticky top-0 z-40">
+                        <i class="fa-solid fa-taxi mr-2"></i> 司機群組 (Driver)
+                    </div>
+                    
+                    <div class="p-5 flex flex-col gap-8">
+
+                        <!-- Spacer -->
+                        <div class="hidden lg:block h-[280px]"></div>
+
+                        <!-- Step 4 -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm">
+                            <div class="hidden lg:block absolute -left-8 top-1/2 w-8 h-[2px] bg-slate-300"></div>
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-robot"></i> BOT AUTO</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 4</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 mb-2">乘車訂單廣播</h4>
+                            <div class="msg-bubble">乘客: Yuki<br>上車: 永和區...</div>
+                            <div class="arrow-down hidden lg:block"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+
+                        <!-- Step 5 -->
+                        <div class="flow-card p-4 rounded-lg border-2 border-orange-400 bg-orange-50 shadow-md mt-2">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-manual bg-orange-500 text-white"><i class="fa-solid fa-hand-pointer"></i> MANUAL</span>
+                                <span class="text-xs text-orange-700 font-mono font-bold">STEP 5</span>
+                            </div>
+                            <h4 class="font-bold text-orange-900 mb-2">司機手動搶單</h4>
+                            <div class="bg-white border border-orange-200 p-2 rounded text-center text-sm font-mono font-bold text-slate-700">"接新北10"</div>
+                            <div class="arrow-down hidden lg:block"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+
+                        <!-- Step 6 -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm mt-2">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-server"></i> SYSTEM</span>
+                                <span class="text-xs text-slate-400 font-mono">STEP 6</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 mb-2">寫入 DB/Redis</h4>
+                            <div class="hidden lg:block absolute left-0 top-1/2 -translate-x-full w-8 h-[2px] bg-cyan-400"></div>
+                        </div>
+
+                        <!-- Spacer -->
+                        <div class="hidden lg:block h-[200px]"></div>
+
+                        <!-- Step 10b: Dispatch Receive -->
+                        <div class="flow-card p-4 rounded-lg border-l-4 border-cyan-500 shadow-sm mt-auto relative">
+                             <div class="hidden lg:block absolute -left-8 top-1/2 w-8 h-[2px] bg-green-500"></div>
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-auto"><i class="fa-solid fa-robot"></i> BOT AUTO</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 mb-2">接收派單指令</h4>
+                            <div class="msg-bubble border-l-4 border-green-500">派 🚕，請於「10」分鐘內到達</div>
+                            <div class="arrow-down hidden lg:block"><i class="fa-solid fa-arrow-down"></i></div>
+                        </div>
+
+                        <!-- Step 11: Driver Reports (Fixed Logic) -->
+                        <div class="flow-card p-4 rounded-lg border-2 border-indigo-400 bg-indigo-50 mt-4 relative">
+                            <div class="flex justify-between mb-2">
+                                <span class="badge-manual" style="background-color: #6366f1;"><i class="fa-solid fa-mobile-screen"></i> MANUAL</span>
+                                <span class="text-xs text-indigo-700 font-mono font-bold">STEP 11</span>
+                            </div>
+                            <h4 class="font-bold text-indigo-900 mb-2">司機回報「客上」</h4>
+                            <p class="text-xs text-indigo-700 mb-2">於群組回覆，觸發結案</p>
+                            <button class="w-full bg-indigo-600 text-white text-xs py-1 rounded">發送回報</button>
+                            
+                             <!-- Connect Back to Admin Step 12 -->
+                             <div class="hidden lg:block connector-left" style="background-color: #6366f1; border-style: solid;"></div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>
